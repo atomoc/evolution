@@ -68,7 +68,7 @@ $secured = (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWAR
 $site_url= ((isset ($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') || $_SERVER['SERVER_PORT'] == $https_port || $secured ) ? 'https://' : 'http://';
 $site_url .= $site_hostname;
 if ($_SERVER['SERVER_PORT'] != 80)
-    $site_url= str_replace(':' . $_SERVER['SERVER_PORT'], '', $site_url); // remove port from HTTP_HOST  
+    $site_url= str_replace(':' . $_SERVER['SERVER_PORT'], '', $site_url); // remove port from HTTP_HOST  
 $site_url .= ($_SERVER['SERVER_PORT'] == 80 || (isset ($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') || $_SERVER['SERVER_PORT'] == $https_port) ? '' : ':' . $_SERVER['SERVER_PORT'];
 $site_url .= $base_url;
 
@@ -100,10 +100,22 @@ if(!function_exists('startCMSSession')) {
         removeInvalidCmsSessionFromStorage($_GET, $session_name);
         removeInvalidCmsSessionFromStorage($_POST, $session_name);
     }
+    function is_session_started(){
+        if (php_sapi_name() !== 'cli') {
+            if (version_compare(phpversion(), '5.4.0', '>=')) {
+                return session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
+            } else {
+                return session_id() === '' ? FALSE : TRUE;
+            }
+        }
+        return FALSE;
+    }
     function startCMSSession(){
-        
+	
+	if ( is_session_started() !== FALSE ) return;
+	
         global $site_sessionname, $https_port;
-        
+	
         session_name($site_sessionname);
         removeInvalidCmsSessionIds($site_sessionname);
         session_start();
