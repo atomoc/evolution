@@ -1,3 +1,23 @@
+Skip to content
+This repository
+Search
+Pull requests
+Issues
+Marketplace
+Gist
+ @atomoc
+ Sign out
+ Unwatch 1
+  Star 0
+ Fork 87 atomoc/modx.evo.custom
+forked from dmi3yy/modx.evo.custom
+ Code  Pull requests 0  Projects 0  Wiki  Settings Insights 
+Tree: 647f6075c3 Find file Copy pathmodx.evo.custom/install/config.inc.tpl
+647f607  2 days ago
+@atomoc atomoc Чтобы не плодить cookie ни при каких условиях
+2 contributors @dmi3yy @atomoc
+RawBlameHistory    
+143 lines (125 sloc)  5.74 KB
 <?php
 /**
  * MODX Configuration file
@@ -68,7 +88,7 @@ $secured = (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWAR
 $site_url= ((isset ($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') || $_SERVER['SERVER_PORT'] == $https_port || $secured ) ? 'https://' : 'http://';
 $site_url .= $site_hostname;
 if ($_SERVER['SERVER_PORT'] != 80)
-    $site_url= str_replace(':' . $_SERVER['SERVER_PORT'], '', $site_url); // remove port from HTTP_HOST  
+    $site_url= str_replace(':' . $_SERVER['SERVER_PORT'], '', $site_url); // remove port from HTTP_HOST  
 $site_url .= ($_SERVER['SERVER_PORT'] == 80 || (isset ($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on') || $_SERVER['SERVER_PORT'] == $https_port) ? '' : ':' . $_SERVER['SERVER_PORT'];
 $site_url .= $base_url;
 
@@ -100,10 +120,22 @@ if(!function_exists('startCMSSession')) {
         removeInvalidCmsSessionFromStorage($_GET, $session_name);
         removeInvalidCmsSessionFromStorage($_POST, $session_name);
     }
+    function is_session_started(){
+        if (php_sapi_name() !== 'cli') {
+            if (version_compare(phpversion(), '5.4.0', '>=')) {
+                return session_status() === PHP_SESSION_ACTIVE ? TRUE : FALSE;
+            } else {
+                return session_id() === '' ? FALSE : TRUE;
+            }
+        }
+        return FALSE;
+    }
     function startCMSSession(){
-        
+	
+	if ( is_session_started() !== FALSE ) return;
+	
         global $site_sessionname, $https_port;
-        
+	
         session_name($site_sessionname);
         removeInvalidCmsSessionIds($site_sessionname);
         session_start();
@@ -128,3 +160,5 @@ if(!function_exists('startCMSSession')) {
         setcookie($site_sessionname, session_id(), $cookieExpiration, MODX_BASE_URL, null, $secure, true);
     }
 }
+Contact GitHub API Training Shop Blog About
+© 2017 GitHub, Inc. Terms Privacy Security Status Help
